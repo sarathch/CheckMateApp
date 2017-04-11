@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,8 +20,6 @@ import com.google.firebase.auth.FirebaseUser;
 public class EmailPasswordActivity extends BaseActivity implements
         View.OnClickListener {
 
-    private TextView mStatusTextView;
-    private TextView mDetailTextView;
     private EditText mEmailField;
     private EditText mPasswordField;
 
@@ -78,7 +77,8 @@ public class EmailPasswordActivity extends BaseActivity implements
     }
 
     private void signIn(String email, String password) {
-        Log.d(TAG, "signIn:" + email);
+        Log.d(
+                TAG, "signIn:" + email);
         if (!validateForm()) {
             return;
         }

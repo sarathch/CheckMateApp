@@ -2,6 +2,8 @@ package com.example.syennamani.checkmate;
 
 import com.google.firebase.database.IgnoreExtraProperties;
 
+import java.util.Map;
+
 /**
  * Created by syennamani on 4/6/2017.
  */
@@ -10,6 +12,7 @@ public class User {
 
     public String email;
     public String token;
+    public Map<String, String> friendsMap;
 
     // Default constructor required for calls to
     // DataSnapshot.getValue(User.class)
