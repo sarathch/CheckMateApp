@@ -135,14 +135,20 @@ public class BaseActivity extends AppCompatActivity {
         newRef.setValue(mFriend);
     }
 
-    protected void readUserData(){
+    protected void readUserData(final User mUser){
         mDatabase.child(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                User user = dataSnapshot.getValue(User.class);
-
-                Log.d(TAG, "User email: " + user.getEmail() + ", token " + user.getToken());
+                if(!dataSnapshot.exists()){
+                    insertUserData(mUser);
+                }else{
+                    // Update instance Id token check
+                    if(!dataSnapshot.child("token").getValue().equals(GlobalValues.getInstanceIdToken())){
+                        dataSnapshot.getRef().child("token").setValue(GlobalValues.getInstanceIdToken());
+                        Log.v(TAG, "FCM Token updated");
+                    }
+                }
             }
 
             @Override
@@ -164,12 +170,12 @@ public class BaseActivity extends AppCompatActivity {
                     Log.d(TAG, "" + childDataSnapshot.child("token").getValue());
                     String pUid = childDataSnapshot.getKey();
                     String pToken = ""+childDataSnapshot.child("token").getValue();
-                    //if(pUid.equals(mAuth.getCurrentUser().getUid())){
-                    //    showAlertDialog("INVALID OPERATION","","");
-                    //}else{
-                        Friend mFriend = new Friend(userEmail, pToken);
+                    if(pUid.equals(mAuth.getCurrentUser().getUid())){
+                        showAlertDialog("INVALID OPERATION","","");
+                    }else{
+                        Friend mFriend = new Friend(userEmail, pUid, false);
                         insertFriendData(mFriend);
-                    //}
+                    }
                 }
             }
             @Override

@@ -5,32 +5,43 @@ package com.example.syennamani.checkmate;
  */
 
 public class Friend {
-    public String email;
-    public String ftoken;
+
+    public String f_email;
+    public String f_uid;
+    public boolean f_status;
 
     public Friend(){
 
     }
 
-    public Friend(String email, String ftoken) {
-        this.email = email;
-        this.ftoken = ftoken;
+    public Friend(String f_email, String f_uid, boolean f_status) {
+        this.f_email = f_email;
+        this.f_uid = f_uid;
+        this.f_status = f_status;
     }
 
-    public String getEmail() {
-        return email;
+    public String getF_email() {
+        return f_email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setF_email(String f_email) {
+        this.f_email = f_email;
     }
 
-    public String getFtoken() {
-        return ftoken;
+    public String getF_uid() {
+        return f_uid;
     }
 
-    public void setFtoken(String ftoken) {
-        this.ftoken = ftoken;
+    public void setF_uid(String f_uid) {
+        this.f_uid = f_uid;
+    }
+
+    public boolean isF_status() {
+        return f_status;
+    }
+
+    public void setF_status(boolean f_status) {
+        this.f_status = f_status;
     }
 
 }

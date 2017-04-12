@@ -153,7 +153,8 @@ public class EmailPasswordActivity extends BaseActivity implements
             //finish();
             Toast.makeText(EmailPasswordActivity.this, "Successfully logged in", Toast.LENGTH_SHORT).show();
             User mUser = new User(mEmailField.getText().toString(),GlobalValues.getInstanceIdToken());
-            insertUserData(mUser);
+            readUserData(mUser);
+            //insertUserData(mUser);
             Intent intent = new Intent(this, ConnectToMateActivity.class);
             startActivity(intent);
         }

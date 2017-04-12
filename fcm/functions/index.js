@@ -25,65 +25,73 @@ admin.initializeApp(functions.config().firebase);
  * Followers add a flag to `/followers/{followedUid}/{followerUid}`.
  * Users save their device notification tokens to `/users/{followedUid}/notificationTokens/{notificationToken}`.
  */
-exports.sendFriendNotification = functions.database.ref('/users/{uid}/email').onWrite(event => {
+exports.sendFriendNotification = functions.database.ref('/users/{uid}/friends/{fid}/f_status').onWrite(event => {
   const uid = event.params.uid;
-/*  var getDeviceTokensPromise='';
-  var email = '';*/
+  const fid = event.params.fid;
+  var fUid = '';
   // If un-follow we exit the function.
 /*  if (!event.data.val()) {
     return console.log('User ', uid, 'un-followed user', followedUid);
   }*/
-  console.log('We have a new login:', uid);
+  console.log('Friend request check:', uid);
 
   // Get the list of device notification tokens.
- /* var ref = admin.database().ref(`/users/${uid}`);
+  var ref = admin.database().ref(`/users/${uid}/friends/${fid}`);
   ref.once('value').then(function(snapshot){
-    console.log('key:',snapshot.key,'email:', snapshot.child("email").val(), 'token', snapshot.child("token").val());
-    getDeviceTokensPromise = snapshot.child("token").val();
-    email = snapshot.child("email").val();
-  });*/
-  const getDeviceTokensPromise = admin.database().ref(`/users/${uid}`).once('value');
+    console.log('key:',snapshot.key,'f_email:', snapshot.child("f_email").val(), 'f_uid:', snapshot.child("f_uid").val());
+    //getDeviceTokensPromise = snapshot.child("token").val();
+    fUid = snapshot.child("f_uid").val();
+    var fStatus = snapshot.child("f_status").val();
 
-  // Get the user profile.
-  const getUserProfilePromise = admin.auth().getUser(uid);
+    // return if friend status flag is set to true
+    if(fStatus)
+      return console.log('Ignore Friend Request - friend status true');
 
-  return Promise.all([getDeviceTokensPromise, getUserProfilePromise]).then(results => {
-    const tokensSnapshot = results[0];
-    const user = results[1];
-    // Check if there are any device tokens.
-    if (!tokensSnapshot.hasChildren()) {
-      return console.log('There are no notification tokens to send to.');
-    }
-    console.log('There are', tokensSnapshot.numChildren(), 'tokens to send notifications to.');
-    console.log('Fetched user profile', user);
-    // Notification details.
-    const payload = {
-      notification: {
-        title: 'You have a new login!',
-        body: `${user.email} is now loggedin to app.`
+    const getFriendEntryPromise = admin.database().ref(`/users/${uid}/friends/${fid}`).once('value');
+    console.log('Friend request check FUID:', fUid);
+    // Get the user profile.
+    const getUserProfilePromise = admin.auth().getUser(uid);
+    const getFriendDetailsPromise = admin.database().ref(`/users`).once('value');
+
+    return Promise.all([getFriendEntryPromise, getFriendDetailsPromise, getUserProfilePromise]).then(results => {
+      const friendEntrySnapshot = results[0];
+      const friendDetailsSnapshot = results[1].child(fUid).val();
+      const user = results[2];
+      // Check if there are any device tokens.
+      if (!friendEntrySnapshot.hasChildren()) {
+        return console.log('Ignore Friend request');
       }
-    };
+      console.log('Fetched friend details', friendDetailsSnapshot);
+      console.log('Fetched user profile', user);
+      // Notification details.
+      const payload = {
+        data: {
+          code: 'FR',
+          senderUID: uid,
+          senderEmail: user.email
+        }
+      };
 
-    // Listing all tokens.
-    const tokens = tokensSnapshot.child("token").val();
+      // Listing all tokens.
+      const tokens = friendDetailsSnapshot.token;
+      console.log('Fetched friend fcm token', tokens);
 
-    if (!tokens) {
-      return console.log('There are no notification tokens to send to.');
-    }
+      if (!tokens) {
+        return console.log('There are no notification tokens to send to.');
+      }
 
-    console.log('Fetched user token', tokens);
-    // Send notifications to all tokens.
-    // Send a message to the device corresponding to the provided
-// registration token.
-    admin.messaging().sendToDevice(tokens, payload)
-      .then(function(response) {
-      // See the MessagingDevicesResponse reference documentation for
-      // the contents of response.
-      console.log("Successfully sent message:", response);
-    })
-    .catch(function(error) {
-      console.log("Error sending message:", error);
-    });
+      // Send notifications to all tokens.
+      // Send a message to the device corresponding to the provided
+      // registration token.
+      admin.messaging().sendToDevice(tokens, payload)
+        .then(function(response) {
+        // See the MessagingDevicesResponse reference documentation for
+        // the contents of response.
+        console.log("Successfully sent message:", response);
+      })
+      .catch(function(error) {
+        console.log("Error sending message:", error);
+      });
 
 /*    return admin.messaging().sendToDevice(tokens, payload).then(response => {
       // For each message check if there was an error.
@@ -101,5 +109,6 @@ exports.sendFriendNotification = functions.database.ref('/users/{uid}/email').on
       });
       return Promise.all(tokensToRemove);
     });*/
+    });
   });
 });
