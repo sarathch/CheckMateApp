@@ -129,6 +129,12 @@ public class BaseActivity extends AppCompatActivity {
         mDatabase.child(userId).setValue(mUser);
     }
 
+    protected void insertFriendData(Friend mFriend){
+        DatabaseReference ref = mDatabase.child(mAuth.getCurrentUser().getUid()).child("friends");
+        DatabaseReference newRef = ref.push();
+        newRef.setValue(mFriend);
+    }
+
     protected void readUserData(){
         mDatabase.child(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -147,7 +153,7 @@ public class BaseActivity extends AppCompatActivity {
         });
     }
 
-    protected void fetchUserSpecificToken(String userEmail){
+    protected void fetchUserSpecificToken(final String userEmail){
         mDatabase.orderByChild("email").equalTo(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -156,11 +162,14 @@ public class BaseActivity extends AppCompatActivity {
                     Log.d(TAG, "PARENT: " + childDataSnapshot.getKey());
                     Log.d(TAG, "" + childDataSnapshot.child("email").getValue());
                     Log.d(TAG, "" + childDataSnapshot.child("token").getValue());
-                    if(childDataSnapshot.getKey().equals(mAuth.getCurrentUser().getUid())){
-                        showAlertDialog("INVALID OPERATION","","");
-                    }else{
-
-                    }
+                    String pUid = childDataSnapshot.getKey();
+                    String pToken = ""+childDataSnapshot.child("token").getValue();
+                    //if(pUid.equals(mAuth.getCurrentUser().getUid())){
+                    //    showAlertDialog("INVALID OPERATION","","");
+                    //}else{
+                        Friend mFriend = new Friend(userEmail, pToken);
+                        insertFriendData(mFriend);
+                    //}
                 }
             }
             @Override

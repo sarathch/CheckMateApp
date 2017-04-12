@@ -12,7 +12,6 @@ public class User {
 
     public String email;
     public String token;
-    public Map<String, String> friendsMap;
 
     // Default constructor required for calls to
     // DataSnapshot.getValue(User.class)
