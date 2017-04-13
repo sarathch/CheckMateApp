@@ -4,16 +4,24 @@ package com.example.syennamani.checkmate;
  * Created by syennamani on 4/5/2017.
  */
 
+import android.app.ActionBar;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,6 +31,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashMap;
 
 public class BaseActivity extends AppCompatActivity {
 
@@ -40,6 +50,7 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
+
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference("users");
         // [START auth_state_listener]
@@ -96,7 +107,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     protected void showAlertDialogEditText(String title, String message, final String action){
-       /* Alert Dialog Code Start*/
+        //Alert Dialog Code Start
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
         alert.setTitle(title); //Set Alert dialog title here
         alert.setMessage(message); //Message here
@@ -111,7 +122,7 @@ public class BaseActivity extends AppCompatActivity {
                 // here we convert the input to a string and show in a toast.
                 String userEmail = input.getEditableText().toString();
                 Toast.makeText(context,userEmail,Toast.LENGTH_LONG).show();
-                fetchUserSpecificToken(userEmail);
+                insertFriendEntry(userEmail);
             } // End of onClick(DialogInterface dialog, int whichButton)
         }); //End of alert.setPositiveButton
         alert.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
@@ -122,6 +133,44 @@ public class BaseActivity extends AppCompatActivity {
         }); //End of alert.setNegativeButton
         AlertDialog alertDialog = alert.create();
         alertDialog.show();
+    }
+
+    protected void showCustomDialog(String action){
+        final Dialog dialog = new Dialog(this);
+
+        Window window = dialog.getWindow();
+        window.setLayout(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.WRAP_CONTENT);
+
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_custom);
+        dialog.show();
+        TextView tvTitle = (TextView) dialog.findViewById(R.id.tv_title);
+        tvTitle.setText("ADD FRIEND");
+        TextView tvBody = (TextView) dialog.findViewById(R.id.tv_body);
+        tvBody.setText("Enter a valid Email");
+
+        final EditText etBody = (EditText) dialog.findViewById(R.id.et_body);
+
+        Button bt_yes = (Button)dialog.findViewById(R.id.btn_yes);
+        Button bt_no = (Button)dialog.findViewById(R.id.btn_no);
+        bt_yes.setText("ADD");
+        bt_no.setText("CANCEL");
+
+        bt_yes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String userEmail = etBody.getEditableText().toString().trim();
+                Toast.makeText(context,userEmail,Toast.LENGTH_LONG).show();
+                insertFriendEntry(userEmail);
+                dialog.dismiss();
+            }
+        });
+        bt_no.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
     }
 
     protected void insertUserData(User mUser){
@@ -159,7 +208,7 @@ public class BaseActivity extends AppCompatActivity {
         });
     }
 
-    protected void fetchUserSpecificToken(final String userEmail){
+    protected void insertFriendEntry(final String userEmail){
         mDatabase.orderByChild("email").equalTo(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -169,7 +218,6 @@ public class BaseActivity extends AppCompatActivity {
                     Log.d(TAG, "" + childDataSnapshot.child("email").getValue());
                     Log.d(TAG, "" + childDataSnapshot.child("token").getValue());
                     String pUid = childDataSnapshot.getKey();
-                    String pToken = ""+childDataSnapshot.child("token").getValue();
                     if(pUid.equals(mAuth.getCurrentUser().getUid())){
                         showAlertDialog("INVALID OPERATION","","");
                     }else{
@@ -202,6 +250,18 @@ public class BaseActivity extends AppCompatActivity {
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        GlobalValues.setInForeground(false);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        GlobalValues.setInForeground(true);
     }
 
 }

@@ -12,6 +12,7 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -47,7 +48,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
-            sendNotification(remoteMessage.getData());
+            HashMap<String, String> fr_message = new HashMap<>(remoteMessage.getData());
+            if(GlobalValues.isInForeground()){
+                Intent intent = new Intent(this, NotificationActivity.class);
+                intent.putExtra("FR_MAP", fr_message);
+                startActivity(intent);
+            }else
+                sendNotification(fr_message);
         }
 
         // Check if message contains a notification payload.
@@ -62,17 +69,19 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     /**
      * Create and show a simple notification containing the received FCM message.
      *
-     * @param message FCM message received.
+     * @param fr_message FCM message received.
      */
-    private void sendNotification(Map<String, String> message) {
-        if (message.get("code").equals("FR")) {
-            Intent intent = new Intent(this, ConnectToMateActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    private void sendNotification(HashMap<String, String> fr_message) {
+
+        if (fr_message.get("code").equals("FR")) {
+            Intent intent = new Intent(this, NotificationActivity.class);
+            intent.putExtra("FR_MAP", fr_message);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                     PendingIntent.FLAG_ONE_SHOT);
 
             String title = "CheckMate Notification";
-            String body = message.get("senderEmail")+" sent you a friend request";
+            String body = fr_message.get("senderEmail")+" sent you a friend request";
             Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.common_full_open_on_phone)

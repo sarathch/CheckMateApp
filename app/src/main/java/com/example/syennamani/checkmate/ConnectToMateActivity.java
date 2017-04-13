@@ -21,7 +21,8 @@ public class ConnectToMateActivity extends BaseActivity {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
                 //readUserData();
-                showAlertDialogEditText("ADD FRIEND", "Enter The Email Of Your Friend","");
+                //showAlertDialogEditText("Add Friend","Enter a valid email","");
+                showCustomDialog("");
             }
         });
 

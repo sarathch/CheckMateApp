@@ -13,6 +13,7 @@ public class GlobalValues {
     public static final String PREFS_NAME = "APPWIDEPREFS";
     private static SharedPreferences appwidePrefs;
     private static final String TAG = "GlobalValues";
+    private static boolean inForeground = false;
 
     public static String getInstanceIdToken() {
         appwidePrefs = MyApplication.getAppContext().getSharedPreferences(PREFS_NAME, Application.MODE_PRIVATE);
@@ -28,4 +29,11 @@ public class GlobalValues {
         Log.d(TAG, "InstanceIdToken: " + instanceIdToken);
     }
 
+    public static boolean isInForeground() {
+        return inForeground;
+    }
+
+    public static void setInForeground(boolean inForeground) {
+        GlobalValues.inForeground = inForeground;
+    }
 }
