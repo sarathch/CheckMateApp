@@ -33,7 +33,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:hint="Enter text"/>
+        android:padding="5dp"
+        android:hint="Enter text"
+        android:background="@color/grey_100"
+        android:textColor="@android:color/black"
+        android:cursorVisible="true"
+        android:textCursorDrawable="@null"/>
 
     <LinearLayout
         android:layout_width="match_parent"

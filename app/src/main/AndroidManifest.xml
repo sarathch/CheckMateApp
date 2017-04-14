@@ -45,8 +45,7 @@
 
         <activity
             android:name=".ConnectToMateActivity"
-            android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:label="@string/title_activity_main"></activity>
         <activity
             android:name=".NotificationActivity" android:theme="@style/Theme.Transparent"></activity>
     </application>
