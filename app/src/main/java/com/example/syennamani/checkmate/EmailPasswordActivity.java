@@ -1,8 +1,10 @@
 package com.example.syennamani.checkmate;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -28,7 +30,7 @@ public class EmailPasswordActivity extends BaseActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_emailpassword);
-
+        Context context = this;
         // Views
         //mStatusTextView = (TextView) findViewById(R.id.status);
         //mDetailTextView = (TextView) findViewById(R.id.detail);
@@ -39,6 +41,10 @@ public class EmailPasswordActivity extends BaseActivity implements
         findViewById(R.id.email_sign_in_button).setOnClickListener(this);
         findViewById(R.id.email_create_account_button).setOnClickListener(this);
         findViewById(R.id.sign_out_button).setOnClickListener(this);
+
+        TelephonyManager tMgr = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
+        String mPhoneNumber = tMgr.getLine1Number();
+        Log.v(TAG+" phone number ", mPhoneNumber);
 
     }
 

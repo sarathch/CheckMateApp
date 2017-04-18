@@ -8,6 +8,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,12 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,14 +30,18 @@ import java.util.List;
 public class ConnectToMateActivity extends BaseActivity {
 
     private Context context;
+    private final String TAG = getClass().getSimpleName();
+    //protected FirebaseAuth mAuth;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connecttomate);
         context = this;
+        //mAuth = FirebaseAuth.getInstance();
+        fetchFriendsList();
         // FriendsList List View
         ListView listView = (ListView)findViewById(R.id.lv_friendsList);
-        String[] values = new String[] {"Android", "iPhone", "WindowsMobile",
+/*        String[] values = new String[] {"Android", "iPhone", "WindowsMobile",
                 "Blackberry", "WebOS", "Ubuntu", "Windows7", "Max OS X",
                 "Linux", "OS/2", "Ubuntu", "Windows7", "Max OS X", "Linux",
                 "OS/2", "Ubuntu", "Windows7", "Max OS X", "Linux", "OS/2",
@@ -39,9 +50,10 @@ public class ConnectToMateActivity extends BaseActivity {
         final ArrayList<String> list = new ArrayList<String>();
         for (int i = 0; i < values.length; ++i) {
             list.add(values[i]);
-        }
+        }*/
+        final ArrayList<Friend> friendArrayList = fetchFriendsList();
 
-        FriendsListAdapter adapter = new FriendsListAdapter(context,list);
+        FriendsListAdapter adapter = new FriendsListAdapter(context,friendArrayList);
         listView.setAdapter(adapter);
 
         // Add Friend Floating action button
@@ -62,9 +74,9 @@ public class ConnectToMateActivity extends BaseActivity {
     private class FriendsListAdapter extends BaseAdapter {
 
         private Context context;
-        private List<String> friends;
+        private List<Friend> friends;
         public FriendsListAdapter(Context context,
-                                  List<String> friends) {
+                                  ArrayList<Friend> friends) {
             this.context = context;
             this.friends = friends;
         }
@@ -94,10 +106,34 @@ public class ConnectToMateActivity extends BaseActivity {
                 convertView = inflater.inflate(R.layout.adapter_friendslist, parent, false);
             }
             TextView tvTextBottom = (TextView)convertView.findViewById(R.id.card_item_textBottom);
-            tvTextBottom.setText(friends.get(position));
+            tvTextBottom.setText(friends.get(position).getF_email());
             return convertView;
         }
 
     }
+
+    protected ArrayList<Friend> fetchFriendsList(){
+        final ArrayList<Friend> friendsList = new ArrayList<>();
+        DatabaseReference ref = mDatabase.child(mAuth.getCurrentUser().getUid()).child("friends");
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                Log.v("Count " ,""+dataSnapshot.getChildrenCount());
+                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                    Friend friend = postSnapshot.getValue(Friend.class);
+                    Log.v(TAG, friend.getF_email());
+                    friendsList.add(friend);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+        return friendsList;
+    }
+
 
 }
