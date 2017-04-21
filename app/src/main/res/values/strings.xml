@@ -59,4 +59,5 @@
     <string name="email_fmt">Email: %s</string>
     <string name="title_activity_main">Friends List</string>
     <string name="connect_title_text">Chose and Message to your mate</string>
+    <string name="title_activity_maps">Map</string>
 </resources>

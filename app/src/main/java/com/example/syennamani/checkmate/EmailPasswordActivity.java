@@ -24,6 +24,7 @@ public class EmailPasswordActivity extends BaseActivity implements
 
     private EditText mEmailField;
     private EditText mPasswordField;
+    private String mPhoneNumber="";
 
     private final String TAG = getClass().getSimpleName();
     @Override
@@ -42,9 +43,17 @@ public class EmailPasswordActivity extends BaseActivity implements
         findViewById(R.id.email_create_account_button).setOnClickListener(this);
         findViewById(R.id.sign_out_button).setOnClickListener(this);
 
-        TelephonyManager tMgr = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
-        String mPhoneNumber = tMgr.getLine1Number();
-        Log.v(TAG+" phone number ", mPhoneNumber);
+        try {
+            TelephonyManager tMgr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            mPhoneNumber = tMgr.getLine1Number();
+        }catch (Exception e){
+
+        }
+        /** TODO
+         *  Check for validity of phone number and handle accordingly
+         */
+        if(mPhoneNumber==null) mPhoneNumber ="9999999999";
+        Log.v(TAG+" phone number ", ""+mPhoneNumber);
 
     }
 
@@ -158,7 +167,7 @@ public class EmailPasswordActivity extends BaseActivity implements
             // user is verified, so you can finish this activity or send user to activity which you want.
             //finish();
             Toast.makeText(EmailPasswordActivity.this, "Successfully logged in", Toast.LENGTH_SHORT).show();
-            User mUser = new User(mEmailField.getText().toString(),GlobalValues.getInstanceIdToken());
+            User mUser = new User(mEmailField.getText().toString(),GlobalValues.getInstanceIdToken(),mPhoneNumber);
             readUserData(mUser);
             //insertUserData(mUser);
             Intent intent = new Intent(this, ConnectToMateActivity.class);

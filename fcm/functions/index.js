@@ -50,25 +50,25 @@ exports.sendFriendNotification = functions.database.ref('/users/{uid}/friends/{f
     const getFriendEntryPromise = admin.database().ref(`/users/${uid}/friends/${fid}`).once('value');
     console.log('Friend request check FUID:', fUid);
     // Get the user profile.
-    const getUserProfilePromise = admin.auth().getUser(uid);
-    const getFriendDetailsPromise = admin.database().ref(`/users`).once('value');
+    const getUserDetailsPromise = admin.database().ref(`/users`).once('value');
 
-    return Promise.all([getFriendEntryPromise, getFriendDetailsPromise, getUserProfilePromise]).then(results => {
+    return Promise.all([getFriendEntryPromise, getUserDetailsPromise]).then(results => {
       const friendEntrySnapshot = results[0];
       const friendDetailsSnapshot = results[1].child(fUid).val();
-      const user = results[2];
+      const senderDetailsSnapshot = results[1].child(uid).val();
       // Check if there are any device tokens.
       if (!friendEntrySnapshot.hasChildren()) {
         return console.log('Ignore Friend request');
       }
       console.log('Fetched friend details', friendDetailsSnapshot);
-      console.log('Fetched user profile', user);
+      console.log('Fetched user details', senderDetailsSnapshot);
       // Notification details.
       const payload = {
         data: {
           code: 'FR',
           senderUID: uid,
-          senderEmail: user.email
+          senderEmail: senderDetailsSnapshot.email,
+          senderPhone: senderDetailsSnapshot.phone
         }
       };
 

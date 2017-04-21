@@ -197,6 +197,7 @@ public class BaseActivity extends AppCompatActivity {
                         dataSnapshot.getRef().child("token").setValue(GlobalValues.getInstanceIdToken());
                         Log.v(TAG, "FCM Token updated");
                     }
+
                 }
             }
 
@@ -218,10 +219,11 @@ public class BaseActivity extends AppCompatActivity {
                     Log.d(TAG, "" + childDataSnapshot.child("email").getValue());
                     Log.d(TAG, "" + childDataSnapshot.child("token").getValue());
                     String pUid = childDataSnapshot.getKey();
+                    String userPhone = childDataSnapshot.child("phone").getValue().toString();
                     if(pUid.equals(mAuth.getCurrentUser().getUid())){
                         showAlertDialog("INVALID OPERATION","","");
                     }else{
-                        Friend mFriend = new Friend(userEmail, pUid, false);
+                        Friend mFriend = new Friend(userEmail, pUid, false, userPhone);
                         insertFriendData(mFriend);
                     }
                 }

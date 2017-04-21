@@ -70,11 +70,12 @@ public class NotificationActivity extends Activity{
         Button bt_no = (Button)dialog.findViewById(R.id.btn_no);
         final String senderEmail = frMap.get("senderEmail");
         final String senderUID = frMap.get("senderUID");
+        final String senderPhone = frMap.get("senderPhone");
         bt_yes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.v(TAG, "Request accepted");
-                Friend mFriend = new Friend(senderEmail, senderUID, true);
+                Friend mFriend = new Friend(senderEmail, senderUID, true,senderPhone);
                 insertFriendData(mFriend);
                 updateSenderFriendEntry(senderUID);
                 dialog.dismiss();

@@ -9,15 +9,17 @@ public class Friend {
     public String f_email;
     public String f_uid;
     public boolean f_status;
+    public String f_phone;
 
     public Friend(){
 
     }
 
-    public Friend(String f_email, String f_uid, boolean f_status) {
+    public Friend(String f_email, String f_uid, boolean f_status, String f_phone) {
         this.f_email = f_email;
         this.f_uid = f_uid;
         this.f_status = f_status;
+        this.f_phone = f_phone;
     }
 
     public String getF_email() {
@@ -44,4 +46,12 @@ public class Friend {
         this.f_status = f_status;
     }
 
+
+    public String getF_phone() {
+        return f_phone;
+    }
+
+    public void setF_phone(String f_phone) {
+        this.f_phone = f_phone;
+    }
 }

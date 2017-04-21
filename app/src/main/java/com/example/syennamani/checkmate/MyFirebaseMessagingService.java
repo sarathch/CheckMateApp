@@ -51,6 +51,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             HashMap<String, String> fr_message = new HashMap<>(remoteMessage.getData());
             if(GlobalValues.isInForeground()){
                 Intent intent = new Intent(this, NotificationActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra("FR_MAP", fr_message);
                 startActivity(intent);
             }else

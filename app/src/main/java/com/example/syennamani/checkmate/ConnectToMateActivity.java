@@ -107,6 +107,9 @@ public class ConnectToMateActivity extends BaseActivity {
             }
             TextView tvTextBottom = (TextView)convertView.findViewById(R.id.card_item_textBottom);
             tvTextBottom.setText(friends.get(position).getF_email());
+
+            TextView tvTextBottom1 = (TextView)convertView.findViewById(R.id.card_item_textBottom1);
+            tvTextBottom1.setText(friends.get(position).getF_phone());
             return convertView;
         }
 
