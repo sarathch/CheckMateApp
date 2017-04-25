@@ -36,4 +36,5 @@ public class GlobalValues {
     public static void setInForeground(boolean inForeground) {
         GlobalValues.inForeground = inForeground;
     }
+
 }

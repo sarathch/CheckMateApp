@@ -1,11 +1,17 @@
 package com.example.syennamani.checkmate;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -16,12 +22,10 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,16 +35,15 @@ public class ConnectToMateActivity extends BaseActivity {
 
     private Context context;
     private final String TAG = getClass().getSimpleName();
-    //protected FirebaseAuth mAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connecttomate);
         context = this;
-        //mAuth = FirebaseAuth.getInstance();
         fetchFriendsList();
         // FriendsList List View
-        ListView listView = (ListView)findViewById(R.id.lv_friendsList);
+        ListView listView = (ListView) findViewById(R.id.lv_friendsList);
 /*        String[] values = new String[] {"Android", "iPhone", "WindowsMobile",
                 "Blackberry", "WebOS", "Ubuntu", "Windows7", "Max OS X",
                 "Linux", "OS/2", "Ubuntu", "Windows7", "Max OS X", "Linux",
@@ -51,9 +54,11 @@ public class ConnectToMateActivity extends BaseActivity {
         for (int i = 0; i < values.length; ++i) {
             list.add(values[i]);
         }*/
+        //locationListener();
+        //startService(new Intent(this,ChildEtListener.class));
         final ArrayList<Friend> friendArrayList = fetchFriendsList();
 
-        FriendsListAdapter adapter = new FriendsListAdapter(context,friendArrayList);
+        FriendsListAdapter adapter = new FriendsListAdapter(context, friendArrayList);
         listView.setAdapter(adapter);
 
         // Add Friend Floating action button
@@ -70,6 +75,8 @@ public class ConnectToMateActivity extends BaseActivity {
         });
 
     }
+
+
 
     private class FriendsListAdapter extends BaseAdapter {
 
@@ -137,6 +144,5 @@ public class ConnectToMateActivity extends BaseActivity {
         });
         return friendsList;
     }
-
 
 }

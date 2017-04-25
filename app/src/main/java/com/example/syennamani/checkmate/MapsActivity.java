@@ -1,9 +1,15 @@
 package com.example.syennamani.checkmate;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -11,20 +17,57 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private double mLatitude;
     private double mLongitude;
+    private final String TAG = getClass().getSimpleName();
+    protected DatabaseReference mDatabase;
+    protected FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        mDatabase = FirebaseDatabase.getInstance().getReference("users");
+        mAuth = FirebaseAuth.getInstance();
         Intent intent = getIntent();
-        mLatitude = intent.getDoubleExtra("Latitude",-34);
-        mLongitude = intent.getDoubleExtra("Longitude", 151);
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(mAuth.getCurrentUser().getUid()).child("userLocation");
+        ValueEventListener locationListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Get location object and use the values to update the UI
+                if(dataSnapshot.exists()) {
+                    Log.v(TAG,dataSnapshot.getKey());
+                    UserLocation userLocation = dataSnapshot.getValue(UserLocation.class);
+                    mLatitude = userLocation.getLatitude();
+                    mLongitude = userLocation.getLongitude();
+                    if (mMap != null) {
+                        LatLng location = new LatLng(mLatitude, mLongitude);
+                        mMap.addMarker(new MarkerOptions().position(location).title("Current UserLocation"));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 14.0f));
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
+                // ...
+            }
+        };
+        ref.addValueEventListener(locationListener);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -44,11 +87,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(mLatitude, mLongitude);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Current Location"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney,14.0f));
+        LatLng location = new LatLng(40.71f,70.00f);
+        mMap.addMarker(new MarkerOptions().position(location).title("Current UserLocation"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 14.0f));
         //mMap.setMaxZoomPreference(17.0f);
     }
 }

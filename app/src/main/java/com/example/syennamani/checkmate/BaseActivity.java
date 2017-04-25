@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -43,7 +44,7 @@ public class BaseActivity extends AppCompatActivity {
     protected DatabaseReference mDatabase;
     private final String TAG = getClass().getSimpleName();
     private Context context;
-
+    private int count = 1;
     // [START declare_auth_listener]
     protected FirebaseAuth.AuthStateListener mAuthListener;
     @Override
@@ -176,6 +177,8 @@ public class BaseActivity extends AppCompatActivity {
     protected void insertUserData(User mUser){
         String userId = mAuth.getCurrentUser().getUid();
         mDatabase.child(userId).setValue(mUser);
+        Intent intent = new Intent(context, ConnectToMateActivity.class);
+        startActivity(intent);
     }
 
     protected void insertFriendData(Friend mFriend){
@@ -197,6 +200,9 @@ public class BaseActivity extends AppCompatActivity {
                         dataSnapshot.getRef().child("token").setValue(GlobalValues.getInstanceIdToken());
                         Log.v(TAG, "FCM Token updated");
                     }
+
+                    Intent intent = new Intent(context, ConnectToMateActivity.class);
+                    startActivity(intent);
 
                 }
             }
@@ -223,7 +229,7 @@ public class BaseActivity extends AppCompatActivity {
                     if(pUid.equals(mAuth.getCurrentUser().getUid())){
                         showAlertDialog("INVALID OPERATION","","");
                     }else{
-                        Friend mFriend = new Friend(userEmail, pUid, false, userPhone);
+                        Friend mFriend = new Friend(userEmail, pUid, false, userPhone,1);
                         insertFriendData(mFriend);
                     }
                 }

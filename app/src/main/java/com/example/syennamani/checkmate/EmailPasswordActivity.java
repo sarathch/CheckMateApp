@@ -167,11 +167,9 @@ public class EmailPasswordActivity extends BaseActivity implements
             // user is verified, so you can finish this activity or send user to activity which you want.
             //finish();
             Toast.makeText(EmailPasswordActivity.this, "Successfully logged in", Toast.LENGTH_SHORT).show();
-            User mUser = new User(mEmailField.getText().toString(),GlobalValues.getInstanceIdToken(),mPhoneNumber);
+            User mUser = new User(mEmailField.getText().toString(),GlobalValues.getInstanceIdToken(),mPhoneNumber, new UserLocation(40.71f,70.00f),0);
             readUserData(mUser);
             //insertUserData(mUser);
-            Intent intent = new Intent(this, ConnectToMateActivity.class);
-            startActivity(intent);
         }
         else
         {

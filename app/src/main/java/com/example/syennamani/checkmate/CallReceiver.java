@@ -2,13 +2,17 @@ package com.example.syennamani.checkmate;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
+import android.os.CountDownTimer;
 import android.util.Log;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Date;
 
@@ -24,7 +28,8 @@ public class CallReceiver extends PhonecallReceiver {
     // The minimum time between updates in milliseconds
     private static final long LOCATION_REFRESH_TIME = 1; // 1 minute
     private Context context;
-
+    CountDownTimer timer;
+    private static final long timerNum = 60;
     private final LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(final Location location) {
@@ -74,28 +79,116 @@ public class CallReceiver extends PhonecallReceiver {
 
     @Override
     protected void onOutgoingCallEnded(Context ctx, String number, Date start, Date end) {
-        Log.v(TAG, "Outgoing Call Ended::" + number + " : " + start);
+        Log.v(TAG, "Outgoing Call Ended::" + number + " : " + start+" : "+end);
+        isAFriendCheck(number, "outcall");
     }
 
     @Override
     protected void onMissedCall(Context ctx, String number, Date start) {
         Log.v(TAG, "Missed Call::" + number + " : " + start);
-        /*Intent intent = new Intent(ctx, MapsActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        ctx.startActivity(intent);*/
-        context = ctx;
-        LocationManager mLocationManager = (LocationManager) ctx.getSystemService(ctx.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(ctx, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(ctx, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
-                LOCATION_REFRESH_DISTANCE, mLocationListener);
+        context =ctx;
+        isAFriendCheck(number, "incall");
+    }
+
+    protected void isAFriendCheck(final String number, final String callType){
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("friends");
+        ref.orderByChild("phone").equalTo(number).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    //context.startService(new Intent(context,LocationService.class));
+                    Friend friend = dataSnapshot.getValue(Friend.class);
+                    if(callType.equals("incall"))
+                        addTracker(friend.getF_uid());
+                    else
+                        isMissedCall(dataSnapshot.getKey());
+                }else
+                    Log.v(TAG, "Not a friend -"+number);
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+    protected void startLocationService(final String fUid){
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(fUid).child("friends");
+        ref.orderByChild("f_uid").equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    dataSnapshot.getRef().child("f_call_status").setValue(0);
+                    context.startService(new Intent(context,LocationService.class));
+                }else
+                    Log.v(TAG, "No entry -"+fUid);
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+    protected void isMissedCall(String fKey){
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("friends").child(fKey).child("f_call_status");
+        final ValueEventListener missedCallListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Get location object and use the values to update the UI
+                if(dataSnapshot.exists()) {
+                    Log.v(TAG,dataSnapshot.getKey());
+                    Friend friend = dataSnapshot.getValue(Friend.class);
+                    if(friend.getF_call_status()==0){
+                        Intent intent = new Intent(context, MapsActivity.class);
+                        context.startActivity(intent);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
+                // ...
+            }
+        };
+        ref.addValueEventListener(missedCallListener);
+        startTimer(ref, missedCallListener);
+    }
+
+    protected void startTimer(final DatabaseReference ref, final ValueEventListener missedCallListener){
+        timer = new CountDownTimer(timerNum*1000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+            }
+
+            @Override
+            public void onFinish() {
+                ref.removeEventListener(missedCallListener);
+            }
+        };
+    }
+
+    protected void addTracker(final String fUid){
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    int trackers = (int) dataSnapshot.child("trackers").getValue();
+                    dataSnapshot.getRef().child("trackers").setValue(trackers++);
+                    startLocationService(fUid);
+                }else
+                    Log.v(TAG, "No entry -");
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
     }
 }

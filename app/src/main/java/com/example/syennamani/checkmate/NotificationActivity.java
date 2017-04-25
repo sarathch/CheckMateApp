@@ -75,7 +75,7 @@ public class NotificationActivity extends Activity{
             @Override
             public void onClick(View v) {
                 Log.v(TAG, "Request accepted");
-                Friend mFriend = new Friend(senderEmail, senderUID, true,senderPhone);
+                Friend mFriend = new Friend(senderEmail, senderUID, true,senderPhone,1);
                 insertFriendData(mFriend);
                 updateSenderFriendEntry(senderUID);
                 dialog.dismiss();
