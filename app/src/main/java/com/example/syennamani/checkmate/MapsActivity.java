@@ -51,6 +51,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     UserLocation userLocation = dataSnapshot.getValue(UserLocation.class);
                     mLatitude = userLocation.getLatitude();
                     mLongitude = userLocation.getLongitude();
+                    Log.v(TAG, "Latitude::"+mLatitude+"Longitude::"+mLongitude);
                     if (mMap != null) {
                         LatLng location = new LatLng(mLatitude, mLongitude);
                         mMap.addMarker(new MarkerOptions().position(location).title("Current UserLocation"));

@@ -71,7 +71,8 @@ public abstract class PhonecallReceiver extends BroadcastReceiver {
                 isIncoming = true;
                 callStartTime = new Date();
                 savedNumber = number;
-                onIncomingCallReceived(context, number, callStartTime);
+                if(savedNumber.length()>10) savedNumber = savedNumber.substring(1);
+                onIncomingCallReceived(context, savedNumber, callStartTime);
                 break;
             case TelephonyManager.CALL_STATE_OFFHOOK:
                 //Transition of ringing->offhook are pickups of incoming calls.  Nothing done on them

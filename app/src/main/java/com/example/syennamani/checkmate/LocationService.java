@@ -44,7 +44,7 @@ public class LocationService extends Service {
         @Override
         public void onLocationChanged(final Location location) {
 
-            Log.v("Lcoation","Changed");
+            Log.v("Lcoation","Changed::"+"Latitude::"+location.getLatitude()+"Longitude::"+location.getLongitude());
 /*            double minLat = -90.00;
             double maxLat = 90.00;
             double latitude = minLat + (double)(Math.random() * ((maxLat - minLat) + 1));
@@ -102,7 +102,8 @@ public class LocationService extends Service {
                 // Get location object and use the values to update the UI
                 if(dataSnapshot.exists()) {
                     Log.v(TAG,dataSnapshot.getKey());
-                    int trackers = (int) dataSnapshot.getValue();
+                    int trackers = dataSnapshot.getValue(Integer.class);
+                    Log.v(TAG,"trackers::"+trackers);
                     if(trackers == 0)
                         stopSelf();
                 }
@@ -144,8 +145,8 @@ public class LocationService extends Service {
             Log.v("Permissions","Not granted");
             stopSelf();
         }
-        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0,
-                0, mLocationListener);
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
+                LOCATION_REFRESH_DISTANCE, mLocationListener);
         stopLocationService();
         return Service.START_NOT_STICKY;
     }

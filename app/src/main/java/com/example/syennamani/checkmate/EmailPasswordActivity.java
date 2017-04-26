@@ -52,6 +52,9 @@ public class EmailPasswordActivity extends BaseActivity implements
         /** TODO
          *  Check for validity of phone number and handle accordingly
          */
+        if(mPhoneNumber.length()>10){
+            mPhoneNumber = mPhoneNumber.substring(1);
+        }
         if(mPhoneNumber==null) mPhoneNumber ="9999999999";
         Log.v(TAG+" phone number ", ""+mPhoneNumber);
 

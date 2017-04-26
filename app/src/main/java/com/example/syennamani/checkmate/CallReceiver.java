@@ -80,6 +80,7 @@ public class CallReceiver extends PhonecallReceiver {
     @Override
     protected void onOutgoingCallEnded(Context ctx, String number, Date start, Date end) {
         Log.v(TAG, "Outgoing Call Ended::" + number + " : " + start+" : "+end);
+        context = ctx;
         isAFriendCheck(number, "outcall");
     }
 
@@ -92,16 +93,20 @@ public class CallReceiver extends PhonecallReceiver {
 
     protected void isAFriendCheck(final String number, final String callType){
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("friends");
-        ref.orderByChild("phone").equalTo(number).addListenerForSingleValueEvent(new ValueEventListener() {
+        ref.orderByChild("f_phone").equalTo(number).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
+                    Log.v(TAG,dataSnapshot.getKey());
+                    Log.v(TAG,String.valueOf(dataSnapshot));
                     //context.startService(new Intent(context,LocationService.class));
-                    Friend friend = dataSnapshot.getValue(Friend.class);
-                    if(callType.equals("incall"))
-                        addTracker(friend.getF_uid());
-                    else
-                        isMissedCall(dataSnapshot.getKey());
+                    for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                        Friend friend = postSnapshot.getValue(Friend.class);
+                        if(callType.equals("incall"))
+                            addTracker(friend.getF_uid());
+                        else
+                            isMissedCall(postSnapshot.getKey());
+                    }
                 }else
                     Log.v(TAG, "Not a friend -"+number);
             }
@@ -114,13 +119,17 @@ public class CallReceiver extends PhonecallReceiver {
     }
 
     protected void startLocationService(final String fUid){
+        Log.v(TAG, "fuid entry -"+fUid);
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(fUid).child("friends");
         ref.orderByChild("f_uid").equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
-                    dataSnapshot.getRef().child("f_call_status").setValue(0);
-                    context.startService(new Intent(context,LocationService.class));
+                    Log.v(TAG,dataSnapshot.getKey());
+                    for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                        postSnapshot.getRef().child("f_call_status").setValue(0);
+                        context.startService(new Intent(context, LocationService.class));
+                    }
                 }else
                     Log.v(TAG, "No entry -"+fUid);
             }
@@ -140,9 +149,10 @@ public class CallReceiver extends PhonecallReceiver {
                 // Get location object and use the values to update the UI
                 if(dataSnapshot.exists()) {
                     Log.v(TAG,dataSnapshot.getKey());
-                    Friend friend = dataSnapshot.getValue(Friend.class);
-                    if(friend.getF_call_status()==0){
+                    int call_status = dataSnapshot.getValue(Integer.class);
+                    if(call_status==0){
                         Intent intent = new Intent(context, MapsActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(intent);
                     }
                 }
@@ -173,13 +183,17 @@ public class CallReceiver extends PhonecallReceiver {
     }
 
     protected void addTracker(final String fUid){
+        Log.v(TAG, "fuid entry -"+fUid);
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
-                    int trackers = (int) dataSnapshot.child("trackers").getValue();
-                    dataSnapshot.getRef().child("trackers").setValue(trackers++);
+                    Log.v(TAG,dataSnapshot.getKey());
+                    Log.v(TAG,String.valueOf(dataSnapshot));
+                    int trackers = dataSnapshot.child("trackers").getValue(Integer.class);
+                    Log.v(TAG,"trackers::"+trackers);
+                    dataSnapshot.getRef().child("trackers").setValue(++trackers);
                     startLocationService(fUid);
                 }else
                     Log.v(TAG, "No entry -");
