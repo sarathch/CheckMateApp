@@ -105,7 +105,7 @@ public class CallReceiver extends PhonecallReceiver {
                         if(callType.equals("incall"))
                             addTracker(friend.getF_uid());
                         else
-                            isMissedCall(postSnapshot.getKey());
+                            isMissedCall(postSnapshot.getKey(),friend.getF_uid());
                     }
                 }else
                     Log.v(TAG, "Not a friend -"+number);
@@ -141,7 +141,7 @@ public class CallReceiver extends PhonecallReceiver {
         });
     }
 
-    protected void isMissedCall(String fKey){
+    protected void isMissedCall(String fKey, final String fUid){
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("friends").child(fKey).child("f_call_status");
         final ValueEventListener missedCallListener = new ValueEventListener() {
             @Override
@@ -152,6 +152,7 @@ public class CallReceiver extends PhonecallReceiver {
                     int call_status = dataSnapshot.getValue(Integer.class);
                     if(call_status==0){
                         Intent intent = new Intent(context, MapsActivity.class);
+                        intent.putExtra("friendUid", fUid);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(intent);
                     }

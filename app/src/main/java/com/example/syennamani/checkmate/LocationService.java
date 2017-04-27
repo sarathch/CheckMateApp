@@ -145,7 +145,8 @@ public class LocationService extends Service {
             Log.v("Permissions","Not granted");
             stopSelf();
         }
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
+        Log.v("Request Location","here");
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, LOCATION_REFRESH_TIME,
                 LOCATION_REFRESH_DISTANCE, mLocationListener);
         stopLocationService();
         return Service.START_NOT_STICKY;

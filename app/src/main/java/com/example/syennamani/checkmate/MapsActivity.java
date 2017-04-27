@@ -41,7 +41,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mDatabase = FirebaseDatabase.getInstance().getReference("users");
         mAuth = FirebaseAuth.getInstance();
         Intent intent = getIntent();
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(mAuth.getCurrentUser().getUid()).child("userLocation");
+        String fUid ="";
+        if(intent.hasExtra("friendUid"))
+            fUid = intent.getStringExtra("friendUid");
+        if(fUid.isEmpty()){
+            Toast.makeText(this, "Cannot Retrieve Location",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(fUid).child("userLocation");
         ValueEventListener locationListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
