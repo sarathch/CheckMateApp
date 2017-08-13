@@ -41,25 +41,9 @@ public class ConnectToMateActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connecttomate);
         context = this;
-        fetchFriendsList();
-        // FriendsList List View
-        ListView listView = (ListView) findViewById(R.id.lv_friendsList);
-/*        String[] values = new String[] {"Android", "iPhone", "WindowsMobile",
-                "Blackberry", "WebOS", "Ubuntu", "Windows7", "Max OS X",
-                "Linux", "OS/2", "Ubuntu", "Windows7", "Max OS X", "Linux",
-                "OS/2", "Ubuntu", "Windows7", "Max OS X", "Linux", "OS/2",
-                "Android", "iPhone", "WindowsMobile"};
-
-        final ArrayList<String> list = new ArrayList<String>();
-        for (int i = 0; i < values.length; ++i) {
-            list.add(values[i]);
-        }*/
         //locationListener();
         //startService(new Intent(this,ChildEtListener.class));
-        final ArrayList<Friend> friendArrayList = fetchFriendsList();
-
-        FriendsListAdapter adapter = new FriendsListAdapter(context, friendArrayList);
-        listView.setAdapter(adapter);
+        fetchFriendsList();
 
         // Add Friend Floating action button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.floatingActionButton);
@@ -68,8 +52,6 @@ public class ConnectToMateActivity extends BaseActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                //readUserData();
-                //showAlertDialogEditText("Add Friend","Enter a valid email","");
                 showCustomDialog("");
             }
         });
@@ -134,6 +116,10 @@ public class ConnectToMateActivity extends BaseActivity {
                     Friend friend = postSnapshot.getValue(Friend.class);
                     Log.v(TAG, friend.getF_email());
                     friendsList.add(friend);
+                    FriendsListAdapter adapter = new FriendsListAdapter(context, friendsList);
+                    // FriendsList List View
+                    ListView listView = (ListView) findViewById(R.id.lv_friendsList);
+                    listView.setAdapter(adapter);
                 }
             }
             @Override
