@@ -104,8 +104,10 @@ public class LocationService extends Service {
                     Log.v(TAG,dataSnapshot.getKey());
                     int trackers = dataSnapshot.getValue(Integer.class);
                     Log.v(TAG,"trackers::"+trackers);
-                    if(trackers == 0)
+                    if(trackers == 0) {
+                        mLocationManager.removeUpdates(mLocationListener);
                         stopSelf();
+                    }
                 }
             }
 

@@ -1,5 +1,6 @@
 package com.example.syennamani.checkmate;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -8,6 +9,7 @@ import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -33,6 +35,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private final String TAG = getClass().getSimpleName();
     protected DatabaseReference mDatabase;
     protected FirebaseAuth mAuth;
+    protected String fUid="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +44,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mDatabase = FirebaseDatabase.getInstance().getReference("users");
         mAuth = FirebaseAuth.getInstance();
         Intent intent = getIntent();
-        String fUid ="";
         if(intent.hasExtra("friendUid"))
             fUid = intent.getStringExtra("friendUid");
         if(fUid.isEmpty()){
@@ -63,7 +65,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (mMap != null) {
                         LatLng location = new LatLng(mLatitude, mLongitude);
                         mMap.addMarker(new MarkerOptions().position(location).title("Current UserLocation"));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 14.0f));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 18.0f));
                     }
                 }
             }
@@ -100,5 +102,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(location).title("Current UserLocation"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 14.0f));
         //mMap.setMaxZoomPreference(17.0f);
+    }
+
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("Exit Tracking")
+                .setMessage("Are you sure you want to stop tracking..?")
+                .setPositiveButton("Exit", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        removeTracker(fUid);
+                    }
+
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    protected void removeTracker(final String fUid){
+        Log.v(TAG, "fuid entry -"+fUid);
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(fUid);
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    Log.v(TAG,dataSnapshot.getKey());
+                    Log.v(TAG,String.valueOf(dataSnapshot));
+                    int trackers = dataSnapshot.child("trackers").getValue(Integer.class);
+                    Log.v(TAG,"trackers::"+trackers);
+                    dataSnapshot.getRef().child("trackers").setValue(--trackers);
+                }else
+                    Log.v(TAG, "No entry -");
+                finish();
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+                finish();
+            }
+        });
     }
 }
