@@ -1,11 +1,13 @@
 package com.example.syennamani.checkmate;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.util.Log;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -100,12 +102,18 @@ public class CallReceiver extends PhonecallReceiver {
                     Log.v(TAG,dataSnapshot.getKey());
                     Log.v(TAG,String.valueOf(dataSnapshot));
                     //context.startService(new Intent(context,LocationService.class));
-                    for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
-                        Friend friend = postSnapshot.getValue(Friend.class);
+                    for (final DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                        final Friend friend = postSnapshot.getValue(Friend.class);
                         if(callType.equals("incall"))
                             addTracker(friend.getF_uid());
-                        else
-                            isMissedCall(postSnapshot.getKey(),friend.getF_uid());
+                        else {
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                public void run() {
+                                    isMissedCall(postSnapshot.getKey(), friend.getF_uid());
+                                }
+                            }, 3000); // 3000 milliseconds delay
+                        }
                     }
                 }else
                     Log.v(TAG, "Not a friend -"+number);
