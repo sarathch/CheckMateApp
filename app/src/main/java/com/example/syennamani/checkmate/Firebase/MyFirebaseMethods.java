@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.example.syennamani.checkmate.ConnectToMateActivity;
 import com.example.syennamani.checkmate.Database.Friend;
+import com.example.syennamani.checkmate.EmailPasswordActivity;
 import com.example.syennamani.checkmate.GlobalValues;
 import com.example.syennamani.checkmate.MapsActivity;
 import com.example.syennamani.checkmate.Database.User;
@@ -302,13 +303,22 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
     }
 
     @Override
-    public void showAlertDialog(String title, String message, String action) {
+    public void showAlertDialog(String title, String message, final String action) {
         new AlertDialog.Builder(context)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // continue with delete
+                        if(action.equals("SignOut")) {
+                            mAuth.signOut();
+                            Intent intent = new Intent(context, EmailPasswordActivity.class);
+                            intent.putExtra("finish", true); // if you are checking for this in your other Activities
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                                    Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                    Intent.FLAG_ACTIVITY_NEW_TASK);
+                            context.startActivity(intent);
+                        }
                         dialog.dismiss();
                     }
                 })

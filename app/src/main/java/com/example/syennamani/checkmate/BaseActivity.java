@@ -62,10 +62,6 @@ public class BaseActivity extends AppCompatActivity {
     }
 
 
-    protected void signOut() {
-        mAuth.signOut();
-    }
-
     public void showProgressDialog() {
         if (mProgressDialog == null) {
             mProgressDialog = new ProgressDialog(this);
