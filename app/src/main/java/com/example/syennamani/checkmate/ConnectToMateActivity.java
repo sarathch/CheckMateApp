@@ -152,4 +152,9 @@ public class ConnectToMateActivity extends BaseActivity {
         return friendsList;
     }
 
+    @Override
+    public void onBackPressed() {
+
+    }
+
 }

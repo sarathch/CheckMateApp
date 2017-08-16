@@ -69,8 +69,8 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
 
                     Intent intent = new Intent(context, ConnectToMateActivity.class);
                     context.startActivity(intent);
-
                 }
+                ((EmailPasswordActivity) context).finish();
             }
 
             @Override
@@ -313,7 +313,6 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
                         if(action.equals("SignOut")) {
                             mAuth.signOut();
                             Intent intent = new Intent(context, EmailPasswordActivity.class);
-                            intent.putExtra("finish", true); // if you are checking for this in your other Activities
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
                                     Intent.FLAG_ACTIVITY_CLEAR_TASK |
                                     Intent.FLAG_ACTIVITY_NEW_TASK);
