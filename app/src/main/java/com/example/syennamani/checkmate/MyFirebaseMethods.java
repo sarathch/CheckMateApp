@@ -146,7 +146,7 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
 
     @Override
     public void isAFriendCheck(final String number, final String callType) {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("friends");
+        DatabaseReference ref = mDatabase.child(mAuth.getCurrentUser().getUid()).child("friends");
         ref.orderByChild("f_phone").equalTo(number).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -181,16 +181,14 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
     @Override
     public void setMissedCallStatus(final String fUid) {
         Log.v(TAG, "fuid entry -"+fUid);
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(fUid).child("friends");
-        ref.orderByChild("f_uid").equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+        DatabaseReference ref = mDatabase.child(fUid).child("friends");
+        ref.orderByChild("f_uid").equalTo(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
                     Log.v(TAG,dataSnapshot.getKey());
                     for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
                         postSnapshot.getRef().child("f_call_status").setValue(1);
-                        addTracker(fUid);
-
                     }
                 }else
                     Log.v(TAG, "No entry -"+fUid);
@@ -205,7 +203,7 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
 
     @Override
     public void isMissedCall(String fKey, final String fUid) {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("friends").child(fKey).child("f_call_status");
+        DatabaseReference ref = mDatabase.child(mAuth.getCurrentUser().getUid()).child("friends").child(fKey).child("f_call_status");
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -215,10 +213,7 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
                     int call_status = dataSnapshot.getValue(Integer.class);
                     if(call_status==1){
                         dataSnapshot.getRef().setValue(0);
-                        Intent intent = new Intent(context, MapsActivity.class);
-                        intent.putExtra("friendUid", fUid);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(intent);
+                        addTracker(fUid);
                     }
                 }
             }
@@ -233,9 +228,9 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
     }
 
     @Override
-    public void addTracker(String fUid) {
+    public void addTracker(final String fUid) {
         Log.v(TAG, "fuid entry -"+fUid);
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        DatabaseReference ref = mDatabase.child(fUid);
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -245,6 +240,11 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
                     int trackers = dataSnapshot.child("trackers").getValue(Integer.class);
                     Log.v(TAG,"trackers::"+trackers);
                     dataSnapshot.getRef().child("trackers").setValue(++trackers);
+                    // Invoke Map Activity
+                    Intent intent = new Intent(context, MapsActivity.class);
+                    intent.putExtra("friendUid", fUid);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent);
                 }else
                     Log.v(TAG, "No entry -");
             }
@@ -259,7 +259,7 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
     @Override
     public void removeTracker(String fUid) {
         Log.v(TAG, "fuid entry -"+fUid);
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(fUid);
+        DatabaseReference ref = mDatabase.child(fUid);
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

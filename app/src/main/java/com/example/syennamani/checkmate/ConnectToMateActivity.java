@@ -88,7 +88,7 @@ public class ConnectToMateActivity extends BaseActivity {
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             // First let's verify the convertView is not null
             if (convertView == null) {
                 // This a new view we inflate the new layout
@@ -106,7 +106,7 @@ public class ConnectToMateActivity extends BaseActivity {
 
                 @Override
                 public void onClick(View view) {
-
+                    myFirebaseMethods.addTracker(friends.get(position).getF_uid());
                 }
             });
             return convertView;
