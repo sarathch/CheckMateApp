@@ -1,4 +1,4 @@
-package com.example.syennamani.checkmate;
+package com.example.syennamani.checkmate.Database;
 
 /**
  * Created by syennamani on 4/24/2017.

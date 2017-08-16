@@ -1,8 +1,6 @@
-package com.example.syennamani.checkmate;
+package com.example.syennamani.checkmate.Database;
 
 import com.google.firebase.database.IgnoreExtraProperties;
-
-import java.util.Map;
 
 /**
  * Created by syennamani on 4/6/2017.

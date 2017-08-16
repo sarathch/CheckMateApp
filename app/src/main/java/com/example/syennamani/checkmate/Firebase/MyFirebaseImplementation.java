@@ -1,4 +1,7 @@
-package com.example.syennamani.checkmate;
+package com.example.syennamani.checkmate.Firebase;
+
+import com.example.syennamani.checkmate.Database.Friend;
+import com.example.syennamani.checkmate.Database.User;
 
 interface MyFirebaseImplementation{
 

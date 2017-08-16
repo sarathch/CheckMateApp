@@ -1,4 +1,4 @@
-package com.example.syennamani.checkmate;
+package com.example.syennamani.checkmate.Firebase;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9,6 +9,9 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.example.syennamani.checkmate.GlobalValues;
+import com.example.syennamani.checkmate.NotificationActivity;
+import com.example.syennamani.checkmate.R;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 

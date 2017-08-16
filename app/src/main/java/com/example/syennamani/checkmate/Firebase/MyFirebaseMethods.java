@@ -1,4 +1,4 @@
-package com.example.syennamani.checkmate;
+package com.example.syennamani.checkmate.Firebase;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,6 +7,11 @@ import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
+import com.example.syennamani.checkmate.ConnectToMateActivity;
+import com.example.syennamani.checkmate.Database.Friend;
+import com.example.syennamani.checkmate.GlobalValues;
+import com.example.syennamani.checkmate.MapsActivity;
+import com.example.syennamani.checkmate.Database.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;

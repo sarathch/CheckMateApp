@@ -1,7 +1,8 @@
-package com.example.syennamani.checkmate;
+package com.example.syennamani.checkmate.Firebase;
 
 import android.util.Log;
 
+import com.example.syennamani.checkmate.GlobalValues;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
