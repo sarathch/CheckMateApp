@@ -2,6 +2,7 @@ package com.example.syennamani.checkmate;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,12 +31,15 @@ public class NotificationActivity extends Activity{
     private final String TAG = getClass().getSimpleName();
     protected FirebaseAuth mAuth;
     protected DatabaseReference mDatabase;
-
+    private MyFirebaseMethods myFirebaseMethods;
+    private Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = this;
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference("users");
+        myFirebaseMethods = new MyFirebaseMethods(context);
         Intent intent  = getIntent();
         //Check for FR Extra
         if(intent.hasExtra("FR_MAP")){
@@ -76,8 +80,8 @@ public class NotificationActivity extends Activity{
             public void onClick(View v) {
                 Log.v(TAG, "Request accepted");
                 Friend mFriend = new Friend(senderEmail, senderUID, true,senderPhone,1);
-                insertFriendData(mFriend);
-                updateSenderFriendEntry(senderUID);
+                myFirebaseMethods.insertFriendData(mFriend);
+                myFirebaseMethods.updateSenderFriendEntry(senderUID);
                 dialog.dismiss();
                 // Now finish, which will drop the user in to the activity that was at the top
                 //  of the task stack
@@ -91,56 +95,8 @@ public class NotificationActivity extends Activity{
                 Log.v(TAG, "Request rejected");
                 // Now finish, which will drop the user in to the activity that was at the top
                 //  of the task stack
-                deleteFriendEntry(senderUID,mAuth.getCurrentUser().getUid());
+                myFirebaseMethods.deleteFriendEntry(senderUID,mAuth.getCurrentUser().getUid());
                 finish();
-            }
-        });
-    }
-
-    protected void insertFriendData(Friend mFriend){
-        DatabaseReference ref = mDatabase.child(mAuth.getCurrentUser().getUid()).child("friends");
-        DatabaseReference newRef = ref.push();
-        newRef.setValue(mFriend);
-    }
-
-    protected void updateSenderFriendEntry(final String friendUID){
-        DatabaseReference ref = mDatabase.child(friendUID).child("friends");
-        ref.orderByChild("f_uid").equalTo(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()) {
-                    Log.d(TAG, "PARENT: " + childDataSnapshot.getKey());
-                    Log.d(TAG, "" + childDataSnapshot.child("f_email").getValue());
-                    Log.d(TAG, "" + childDataSnapshot.child("f_status").getValue());
-                    childDataSnapshot.getRef().child("f_status").setValue(true);
-                }
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-            }
-        });
-    }
-
-    protected void deleteFriendEntry(final String userUID, final String friendUID){
-        DatabaseReference ref = mDatabase.child(userUID).child("friends");
-        ref.orderByChild("f_uid").equalTo(friendUID).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()) {
-                    Log.d(TAG, "PARENT: " + childDataSnapshot.getKey());
-                    Log.d(TAG, "" + childDataSnapshot.child("f_email").getValue());
-                    Log.d(TAG, "" + childDataSnapshot.child("f_status").getValue());
-                    dataSnapshot.getRef().setValue(null);
-                }
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
     }

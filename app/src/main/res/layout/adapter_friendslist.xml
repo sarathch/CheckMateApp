@@ -27,10 +27,11 @@
                 android:layout_alignParentLeft="true" />
 
             <ImageView
-                android:id="@+id/iv_delete"
+                android:id="@+id/iv_search"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="5dp"
+                android:src="@drawable/map_search"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentRight="true" />
 

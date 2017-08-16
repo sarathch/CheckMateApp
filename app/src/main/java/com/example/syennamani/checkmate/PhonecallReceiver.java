@@ -27,7 +27,7 @@ public abstract class PhonecallReceiver extends BroadcastReceiver {
         //We listen to two intents.  The new outgoing call only tells us of an outgoing call.  We use it to get the number.
         if (intent.getAction().equals("android.intent.action.NEW_OUTGOING_CALL")) {
             savedNumber = intent.getExtras().getString("android.intent.extra.PHONE_NUMBER");
-            if(savedNumber.length()>10) savedNumber = savedNumber.substring(1);
+            if(savedNumber.length()>10) savedNumber = savedNumber.substring(savedNumber.length()-10);
         }
         else{
             String stateStr = intent.getExtras().getString(TelephonyManager.EXTRA_STATE);
@@ -72,7 +72,7 @@ public abstract class PhonecallReceiver extends BroadcastReceiver {
                 isIncoming = true;
                 callStartTime = new Date();
                 savedNumber = number;
-                if(savedNumber.length()>10) savedNumber = savedNumber.substring(1);
+                if(savedNumber.length()>10) savedNumber = savedNumber.substring(savedNumber.length()-10);
                 onIncomingCallReceived(context, savedNumber, callStartTime);
                 break;
             case TelephonyManager.CALL_STATE_OFFHOOK:

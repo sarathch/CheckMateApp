@@ -33,8 +33,6 @@ public class EmailPasswordActivity extends BaseActivity implements
         setContentView(R.layout.activity_emailpassword);
         Context context = this;
         // Views
-        //mStatusTextView = (TextView) findViewById(R.id.status);
-        //mDetailTextView = (TextView) findViewById(R.id.detail);
         mEmailField = (EditText) findViewById(R.id.field_email);
         mPasswordField = (EditText) findViewById(R.id.field_password);
 
@@ -53,7 +51,7 @@ public class EmailPasswordActivity extends BaseActivity implements
          *  Check for validity of phone number and handle accordingly
          */
         if(mPhoneNumber.length()>10){
-            mPhoneNumber = mPhoneNumber.substring(1);
+            mPhoneNumber = mPhoneNumber.substring(mPhoneNumber.length()-10);
         }
         if(mPhoneNumber==null) mPhoneNumber ="9999999999";
         Log.v(TAG+" phone number ", ""+mPhoneNumber);
@@ -147,13 +145,13 @@ public class EmailPasswordActivity extends BaseActivity implements
                             Toast.makeText(EmailPasswordActivity.this,
                                     "Verification email sent to " + user.getEmail(),
                                     Toast.LENGTH_SHORT).show();
-                            showAlertDialog("VERIFY EMAIL", "A verification email has been sent to you. Please authenticate to login.","");
+                            myFirebaseMethods.showAlertDialog("VERIFY EMAIL", "A verification email has been sent to you. Please authenticate to login.","");
                         } else {
                             Log.e(TAG, "sendEmailVerification", task.getException());
                             Toast.makeText(EmailPasswordActivity.this,
                                     "Failed to send verification email. Please provide valid email",
                                     Toast.LENGTH_SHORT).show();
-                            showAlertDialog("VERIFY EMAIL", "Email verification failed. Please enter valid email address","");
+                            myFirebaseMethods.showAlertDialog("VERIFY EMAIL", "Email verification failed. Please enter valid email address","");
                         }
                         // [END_EXCLUDE]
                     }
@@ -171,8 +169,7 @@ public class EmailPasswordActivity extends BaseActivity implements
             //finish();
             Toast.makeText(EmailPasswordActivity.this, "Successfully logged in", Toast.LENGTH_SHORT).show();
             User mUser = new User(mEmailField.getText().toString(),GlobalValues.getInstanceIdToken(),mPhoneNumber, new UserLocation(40.71f,70.00f),0);
-            readUserData(mUser);
-            //insertUserData(mUser);
+            myFirebaseMethods.readUserData(mUser);
         }
         else
         {

@@ -1,6 +1,7 @@
 package com.example.syennamani.checkmate;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -30,7 +31,7 @@ public class LocationService extends Service {
 
     protected DatabaseReference mDatabase;
     protected FirebaseAuth mAuth;
-
+    private Context context;
     private final String TAG = getClass().getSimpleName();
 
     // The minimum distance to change Updates in meters
@@ -44,15 +45,10 @@ public class LocationService extends Service {
         @Override
         public void onLocationChanged(final Location location) {
 
-            Log.v("Lcoation","Changed::"+"Latitude::"+location.getLatitude()+"Longitude::"+location.getLongitude());
-/*            double minLat = -90.00;
-            double maxLat = 90.00;
-            double latitude = minLat + (double)(Math.random() * ((maxLat - minLat) + 1));
-            double minLon = 0.00;
-            double maxLon = 180.00;
-            double longitude = minLon + (double)(Math.random() * ((maxLon - minLon) + 1));*/
+            Log.v("Lcoation", "Changed::" + "Latitude::" + location.getLatitude() + "Longitude::" + location.getLongitude());
+
             //your code here
-            updateLocation(location.getLatitude(),location.getLongitude());
+            updateLocation(location.getLatitude(), location.getLongitude());
         }
 
         @Override
@@ -80,11 +76,12 @@ public class LocationService extends Service {
         mDatabase.child(mAuth.getCurrentUser().getUid()).child("userLocation").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()) {
+                if (dataSnapshot.exists()) {
                     dataSnapshot.getRef().child("latitude").setValue(latitude);
                     dataSnapshot.getRef().child("longitude").setValue(longitude);
                 }
             }
+
             @Override
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
@@ -94,19 +91,34 @@ public class LocationService extends Service {
     }
 
 
-    private void stopLocationService(){
+    private void trackLocationService() {
         DatabaseReference ref = mDatabase.child(mAuth.getCurrentUser().getUid()).child("trackers");
         ValueEventListener trackerListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // Get location object and use the values to update the UI
-                if(dataSnapshot.exists()) {
-                    Log.v(TAG,dataSnapshot.getKey());
+                if (dataSnapshot.exists()) {
+                    Log.v(TAG, dataSnapshot.getKey());
                     int trackers = dataSnapshot.getValue(Integer.class);
-                    Log.v(TAG,"trackers::"+trackers);
-                    if(trackers == 0) {
+                    Log.v(TAG, "trackers::" + trackers);
+                    if (trackers == 0) {
                         mLocationManager.removeUpdates(mLocationListener);
-                        stopSelf();
+                    } else {
+                        Log.v("Request Location", "here");
+                        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            Log.v("Permissions", "Not granted");
+                            stopSelf();
+                            return;
+                        }
+                        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, LOCATION_REFRESH_TIME,
+                                LOCATION_REFRESH_DISTANCE, mLocationListener);
                     }
                 }
             }
@@ -127,15 +139,22 @@ public class LocationService extends Service {
         return null;
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public void onCreate(){
+        super.onCreate();
+        Log.v(TAG, "Service Created");
+        context = this;
         mDatabase = FirebaseDatabase.getInstance().getReference("users");
         mAuth = FirebaseAuth.getInstance();
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        trackLocationService();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.v(TAG, "Service Started");
         /**
          *  Temp location code
          */
-        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -144,13 +163,13 @@ public class LocationService extends Service {
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            Log.v("Permissions","Not granted");
+            Log.v("Permissions", "Not granted");
             stopSelf();
         }
-        Log.v("Request Location","here");
-        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, LOCATION_REFRESH_TIME,
-                LOCATION_REFRESH_DISTANCE, mLocationListener);
-        stopLocationService();
-        return Service.START_NOT_STICKY;
+        Location location = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        double longitude = location.getLongitude();
+        double latitude = location.getLatitude();
+        updateLocation(latitude,longitude);
+        return super.onStartCommand(intent, flags, startId);
     }
 }

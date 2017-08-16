@@ -39,7 +39,6 @@ public class BaseActivity extends AppCompatActivity {
 
     @VisibleForTesting
     public ProgressDialog mProgressDialog;
-    protected AlertDialog mAlertDialog;
     protected FirebaseAuth mAuth;
     protected DatabaseReference mDatabase;
     private final String TAG = getClass().getSimpleName();
@@ -47,11 +46,12 @@ public class BaseActivity extends AppCompatActivity {
     private int count = 1;
     // [START declare_auth_listener]
     protected FirebaseAuth.AuthStateListener mAuthListener;
+    protected MyFirebaseMethods myFirebaseMethods;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
-
+        myFirebaseMethods = new MyFirebaseMethods(context);
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference("users");
         // [START auth_state_listener]
@@ -68,7 +68,6 @@ public class BaseActivity extends AppCompatActivity {
                 }
             }
         };
-
     }
 
 
@@ -90,50 +89,6 @@ public class BaseActivity extends AppCompatActivity {
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
-    }
-
-    protected void showAlertDialog(String title, String message, String action){
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // continue with delete
-                        dialog.dismiss();
-                    }
-                })
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
-
-    }
-
-    protected void showAlertDialogEditText(String title, String message, final String action){
-        //Alert Dialog Code Start
-        AlertDialog.Builder alert = new AlertDialog.Builder(context);
-        alert.setTitle(title); //Set Alert dialog title here
-        alert.setMessage(message); //Message here
-
-        // Set an EditText view to get user input
-        final EditText input = new EditText(context);
-        alert.setView(input);
-
-        alert.setPositiveButton("ADD", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                //You will get as string input data in this variable.
-                // here we convert the input to a string and show in a toast.
-                String userEmail = input.getEditableText().toString();
-                Toast.makeText(context,userEmail,Toast.LENGTH_LONG).show();
-                insertFriendEntry(userEmail);
-            } // End of onClick(DialogInterface dialog, int whichButton)
-        }); //End of alert.setPositiveButton
-        alert.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // Canceled.
-                dialog.cancel();
-            }
-        }); //End of alert.setNegativeButton
-        AlertDialog alertDialog = alert.create();
-        alertDialog.show();
     }
 
     protected void showCustomDialog(String action){
@@ -162,7 +117,7 @@ public class BaseActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String userEmail = etBody.getEditableText().toString().trim();
                 Toast.makeText(context,userEmail,Toast.LENGTH_LONG).show();
-                insertFriendEntry(userEmail);
+                myFirebaseMethods.insertFriendEntry(userEmail);
                 dialog.dismiss();
             }
         });
@@ -170,74 +125,6 @@ public class BaseActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-            }
-        });
-    }
-
-    protected void insertUserData(User mUser){
-        String userId = mAuth.getCurrentUser().getUid();
-        mDatabase.child(userId).setValue(mUser);
-        Intent intent = new Intent(context, ConnectToMateActivity.class);
-        startActivity(intent);
-    }
-
-    protected void insertFriendData(Friend mFriend){
-        DatabaseReference ref = mDatabase.child(mAuth.getCurrentUser().getUid()).child("friends");
-        DatabaseReference newRef = ref.push();
-        newRef.setValue(mFriend);
-    }
-
-    protected void readUserData(final User mUser){
-        mDatabase.child(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                if(!dataSnapshot.exists()){
-                    insertUserData(mUser);
-                }else{
-                    // Update instance Id token check
-                    if(!dataSnapshot.child("token").getValue().equals(GlobalValues.getInstanceIdToken())){
-                        dataSnapshot.getRef().child("token").setValue(GlobalValues.getInstanceIdToken());
-                        Log.v(TAG, "FCM Token updated");
-                    }
-
-                    Intent intent = new Intent(context, ConnectToMateActivity.class);
-                    startActivity(intent);
-
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-            }
-        });
-    }
-
-    protected void insertFriendEntry(final String userEmail){
-        mDatabase.orderByChild("email").equalTo(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()) {
-                    Log.d(TAG, "PARENT: " + childDataSnapshot.getKey());
-                    Log.d(TAG, "" + childDataSnapshot.child("email").getValue());
-                    Log.d(TAG, "" + childDataSnapshot.child("token").getValue());
-                    String pUid = childDataSnapshot.getKey();
-                    String userPhone = childDataSnapshot.child("phone").getValue().toString();
-                    if(pUid.equals(mAuth.getCurrentUser().getUid())){
-                        showAlertDialog("INVALID OPERATION","","");
-                    }else{
-                        Friend mFriend = new Friend(userEmail, pUid, false, userPhone,1);
-                        insertFriendData(mFriend);
-                    }
-                }
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
     }

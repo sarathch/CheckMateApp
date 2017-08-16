@@ -1,5 +1,6 @@
 package com.example.syennamani.checkmate;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,8 +43,7 @@ public class ConnectToMateActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connecttomate);
         context = this;
-        //locationListener();
-        //startService(new Intent(this,ChildEtListener.class));
+        // Fetch friends list
         fetchFriendsList();
 
         // Add Friend Floating action button
@@ -55,9 +56,9 @@ public class ConnectToMateActivity extends BaseActivity {
                 showCustomDialog("");
             }
         });
-
+        //Start LocationService
+        context.startService(new Intent(context, LocationService.class));
     }
-
 
 
     private class FriendsListAdapter extends BaseAdapter {
@@ -99,6 +100,15 @@ public class ConnectToMateActivity extends BaseActivity {
 
             TextView tvTextBottom1 = (TextView)convertView.findViewById(R.id.card_item_textBottom1);
             tvTextBottom1.setText(friends.get(position).getF_phone());
+
+            ImageView imageView = (ImageView)convertView.findViewById(R.id.iv_search);
+            imageView.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+
+                }
+            });
             return convertView;
         }
 

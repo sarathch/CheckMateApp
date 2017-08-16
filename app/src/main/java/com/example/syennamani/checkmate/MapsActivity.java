@@ -1,5 +1,6 @@
 package com.example.syennamani.checkmate;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,6 +19,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -36,11 +38,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected DatabaseReference mDatabase;
     protected FirebaseAuth mAuth;
     protected String fUid="";
-
+    protected Marker marker;
+    private Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        context = this;
         mDatabase = FirebaseDatabase.getInstance().getReference("users");
         mAuth = FirebaseAuth.getInstance();
         Intent intent = getIntent();
@@ -64,7 +68,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Log.v(TAG, "Latitude::"+mLatitude+"Longitude::"+mLongitude);
                     if (mMap != null) {
                         LatLng location = new LatLng(mLatitude, mLongitude);
-                        mMap.addMarker(new MarkerOptions().position(location).title("Current UserLocation"));
+                        if(marker!=null) marker.remove();
+                        marker = mMap.addMarker(new MarkerOptions().position(location).title("Current UserLocation"));
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 18.0f));
                     }
                 }
@@ -98,10 +103,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        LatLng location = new LatLng(40.71f,70.00f);
-        mMap.addMarker(new MarkerOptions().position(location).title("Current UserLocation"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 14.0f));
-        //mMap.setMaxZoomPreference(17.0f);
     }
 
     @Override
@@ -114,7 +115,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        removeTracker(fUid);
+                        new MyFirebaseMethods(context).removeTracker(fUid);
+                        finish();
                     }
 
                 })
@@ -122,28 +124,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .show();
     }
 
-    protected void removeTracker(final String fUid){
-        Log.v(TAG, "fuid entry -"+fUid);
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(fUid);
-        ref.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    Log.v(TAG,dataSnapshot.getKey());
-                    Log.v(TAG,String.valueOf(dataSnapshot));
-                    int trackers = dataSnapshot.child("trackers").getValue(Integer.class);
-                    Log.v(TAG,"trackers::"+trackers);
-                    dataSnapshot.getRef().child("trackers").setValue(--trackers);
-                }else
-                    Log.v(TAG, "No entry -");
-                finish();
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-                finish();
-            }
-        });
-    }
 }
