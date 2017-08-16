@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
@@ -12,6 +13,8 @@ import com.example.syennamani.checkmate.Database.Friend;
 import com.example.syennamani.checkmate.GlobalValues;
 import com.example.syennamani.checkmate.MapsActivity;
 import com.example.syennamani.checkmate.Database.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -283,6 +286,19 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
+    }
+
+    @Override
+    public void handleForgotPwd(String uEmail) {
+        mAuth.sendPasswordResetEmail(uEmail)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "Email sent.");
+                        }
+                    }
+                });
     }
 
     @Override

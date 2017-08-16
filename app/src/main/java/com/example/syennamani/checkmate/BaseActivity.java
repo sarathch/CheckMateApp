@@ -82,7 +82,7 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
-    protected void showCustomDialog(String action){
+    protected void showCustomDialog(String title, final String action){
         final Dialog dialog = new Dialog(this);
 
         Window window = dialog.getWindow();
@@ -92,7 +92,7 @@ public class BaseActivity extends AppCompatActivity {
         dialog.setContentView(R.layout.dialog_custom);
         dialog.show();
         TextView tvTitle = (TextView) dialog.findViewById(R.id.tv_title);
-        tvTitle.setText("ADD FRIEND");
+        tvTitle.setText(title);
         TextView tvBody = (TextView) dialog.findViewById(R.id.tv_body);
         tvBody.setText("Enter a valid Email");
 
@@ -100,15 +100,22 @@ public class BaseActivity extends AppCompatActivity {
 
         Button bt_yes = (Button)dialog.findViewById(R.id.btn_yes);
         Button bt_no = (Button)dialog.findViewById(R.id.btn_no);
-        bt_yes.setText("ADD");
+        bt_yes.setText("SEND");
         bt_no.setText("CANCEL");
 
         bt_yes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String userEmail = etBody.getEditableText().toString().trim();
-                Toast.makeText(context,userEmail,Toast.LENGTH_LONG).show();
-                myFirebaseMethods.insertFriendEntry(userEmail);
+                if(action.equals("FriendRequest")) {
+                    myFirebaseMethods.insertFriendEntry(userEmail);
+                    Toast.makeText(context,"Friend Request Sent to ::"+userEmail,Toast.LENGTH_LONG).show();
+                }
+                else if(action.equals("ForgotPwd")) {
+                    myFirebaseMethods.handleForgotPwd(userEmail);
+                    Toast.makeText(context,"Password Reset Email Sent to ::"+userEmail,Toast.LENGTH_LONG).show();
+                }
+
                 dialog.dismiss();
             }
         });

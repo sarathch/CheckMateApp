@@ -1,14 +1,17 @@
 package com.example.syennamani.checkmate;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.syennamani.checkmate.Database.User;
@@ -24,6 +27,7 @@ public class EmailPasswordActivity extends BaseActivity implements
 
     private EditText mEmailField;
     private EditText mPasswordField;
+    private TextView tvForgotPwd;
     private String mPhoneNumber="";
 
     private final String TAG = getClass().getSimpleName();
@@ -35,11 +39,12 @@ public class EmailPasswordActivity extends BaseActivity implements
         // Views
         mEmailField = (EditText) findViewById(R.id.field_email);
         mPasswordField = (EditText) findViewById(R.id.field_password);
-
+        tvForgotPwd = (TextView) findViewById(R.id.forgot_pwd);
+        tvForgotPwd.setPaintFlags(tvForgotPwd.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         // Buttons
         findViewById(R.id.email_sign_in_button).setOnClickListener(this);
         findViewById(R.id.email_create_account_button).setOnClickListener(this);
-        findViewById(R.id.sign_out_button).setOnClickListener(this);
+        tvForgotPwd.setOnClickListener(this);
 
         try {
             TelephonyManager tMgr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -213,8 +218,8 @@ public class EmailPasswordActivity extends BaseActivity implements
             createAccount(mEmailField.getText().toString(), mPasswordField.getText().toString());
         } else if (i == R.id.email_sign_in_button) {
             signIn(mEmailField.getText().toString(), mPasswordField.getText().toString());
-        } else if (i == R.id.sign_out_button) {
-            signOut();
+        }else if (i == R.id.forgot_pwd) {
+            showCustomDialog("FORGOT PASSWORD", "ForgotPwd");
         }
     }
 

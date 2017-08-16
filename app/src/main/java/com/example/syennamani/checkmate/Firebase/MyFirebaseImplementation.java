@@ -88,6 +88,16 @@ interface MyFirebaseImplementation{
      */
     public void removeTracker(final String fUid);
 
+
+    /**************************
+     * Forgot Password
+     ************************/
+
+    /**
+     * Method to handle forgot password
+     */
+    public void handleForgotPwd(String uEmail);
+
     /***************************
      *  Miscellaneous Utilities
      ****************************/
