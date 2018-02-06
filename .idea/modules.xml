@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/CheckMat.iml" filepath="$PROJECT_DIR$/CheckMat.iml" />
-      <module fileurl="file://$PROJECT_DIR$/CheckMate.iml" filepath="$PROJECT_DIR$/CheckMate.iml" />
+      <module fileurl="file://C:\Users\syennamani\StudioProjects\CheckMateApp\CheckMate.iml" filepath="C:\Users\syennamani\StudioProjects\CheckMateApp\CheckMate.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CheckMateApp.iml" filepath="$PROJECT_DIR$/CheckMateApp.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

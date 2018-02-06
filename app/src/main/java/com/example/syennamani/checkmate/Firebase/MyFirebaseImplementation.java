@@ -109,4 +109,11 @@ interface MyFirebaseImplementation{
      * @param action
      */
     public void showAlertDialog(String title, String message, String action);
+
+    /**
+     * Method to verify if user granted permissions
+     * @param grantResults
+     * @return
+     */
+    public boolean verifyPermissions(int[] grantResults);
 }

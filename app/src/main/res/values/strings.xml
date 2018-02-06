@@ -62,4 +62,8 @@
     <string name="title_activity_maps">Map</string>
 
     <string name="forgot_password">forgot password</string>
+    <string name="permission_read_sms_rationale">App needs to read your phone number to map and log location.</string>
+    <string name="permission_phone_state_rationale">App needs to read your phone number to map and log location.</string>
+    <string name="permission_location_rationale">App needs location permissions to track ral time location details.</string>
+    <string name="permissions_not_granted">Location tracking service won\'t be able to work without phone state and location permissions.</string>
 </resources>

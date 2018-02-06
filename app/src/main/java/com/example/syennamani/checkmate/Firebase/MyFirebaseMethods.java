@@ -3,6 +3,7 @@ package com.example.syennamani.checkmate.Firebase;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -323,5 +324,19 @@ public class MyFirebaseMethods implements MyFirebaseImplementation {
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
+    }
+
+    @Override
+    public boolean verifyPermissions(int[] grantResults) {
+        // Atleast one result must be checked
+        if(grantResults.length < 1)
+            return false;
+
+        // Verify that each required permission  has been granted
+        for(int result: grantResults)
+            if(result != PackageManager.PERMISSION_GRANTED)
+                return false;
+
+        return true;
     }
 }
