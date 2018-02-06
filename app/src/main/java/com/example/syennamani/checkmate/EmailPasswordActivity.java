@@ -55,9 +55,9 @@ public class EmailPasswordActivity extends BaseActivity implements
         setContentView(R.layout.activity_emailpassword);
         context = this;
         // Views
-        mEmailField = (EditText) findViewById(R.id.field_email);
-        mPasswordField = (EditText) findViewById(R.id.field_password);
-        tvForgotPwd = (TextView) findViewById(R.id.forgot_pwd);
+        mEmailField =  findViewById(R.id.field_email);
+        mPasswordField =  findViewById(R.id.field_password);
+        tvForgotPwd =  findViewById(R.id.forgot_pwd);
         tvForgotPwd.setPaintFlags(tvForgotPwd.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         // Buttons
         findViewById(R.id.email_sign_in_button).setOnClickListener(this);
@@ -74,25 +74,26 @@ public class EmailPasswordActivity extends BaseActivity implements
                 hasPermissions = false;
                 return;
             }
-            mPhoneNumber = tMgr.getLine1Number();
+            mPhoneNumber = tMgr != null ? tMgr.getLine1Number() : "";
         }catch (Exception e){
             Log.e("Exception",e.toString());
         }
-        /** TODO
-         *  Check for validity of phone number and handle accordingly
-         */
+
+        if(mPhoneNumber==null) mPhoneNumber ="9999999999";
+
+        // Check for validity of phone number and handle accordingly
         if(mPhoneNumber.length()>10){
             mPhoneNumber = mPhoneNumber.substring(mPhoneNumber.length()-10);
         }
-        if(mPhoneNumber==null) mPhoneNumber ="9999999999";
         Log.v(TAG+" phone number ", ""+mPhoneNumber);
     }
 
     private void checkPermissionsAndInit() {
 
         TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        boolean simcardAvailable = tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT && tm.getPhoneType() != TelephonyManager.PHONE_TYPE_NONE;
-        if(!simcardAvailable)
+        boolean simCardAvailable = ((tm != null ? tm.getSimState() : 1) != TelephonyManager.SIM_STATE_ABSENT) && (tm.getPhoneType() != TelephonyManager.PHONE_TYPE_NONE);
+        View rootView = this.getWindow().getDecorView().findViewById(android.R.id.content);
+        if(!simCardAvailable)
             hasPermissions = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
             // handling read sms permission
@@ -100,7 +101,7 @@ public class EmailPasswordActivity extends BaseActivity implements
                 permissionsItems.add(Manifest.permission.READ_SMS);
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_SMS)){
                     // Provide rationale in Snackbar with button to request permission
-                    Snackbar.make(findViewById(android.R.id.content), R.string.permission_read_sms_rationale, Snackbar.LENGTH_INDEFINITE).show();
+                    Snackbar.make(rootView, R.string.permission_read_sms_rationale, Snackbar.LENGTH_INDEFINITE).show();
                 }
             }
             // handling read phone state permission
@@ -108,7 +109,7 @@ public class EmailPasswordActivity extends BaseActivity implements
                 permissionsItems.add(Manifest.permission.READ_PHONE_STATE);
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_PHONE_STATE)){
                     // Provide rationale in Snackbar with button to request permission
-                    Snackbar.make(findViewById(android.R.id.content), R.string.permission_phone_state_rationale, Snackbar.LENGTH_INDEFINITE).show();
+                    Snackbar.make(rootView, R.string.permission_phone_state_rationale, Snackbar.LENGTH_INDEFINITE).show();
                 }
             }
             // handling outgoing calls permission
@@ -116,7 +117,7 @@ public class EmailPasswordActivity extends BaseActivity implements
                 permissionsItems.add(Manifest.permission.PROCESS_OUTGOING_CALLS);
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.PROCESS_OUTGOING_CALLS)){
                     // Provide rationale in Snackbar with button to request permission
-                    Snackbar.make(findViewById(android.R.id.content), R.string.permission_read_sms_rationale, Snackbar.LENGTH_INDEFINITE).show();
+                    Snackbar.make(rootView, R.string.permission_read_sms_rationale, Snackbar.LENGTH_INDEFINITE).show();
                 }
             }
             // handling location permission
@@ -124,7 +125,7 @@ public class EmailPasswordActivity extends BaseActivity implements
                 permissionsItems.add(Manifest.permission.ACCESS_FINE_LOCATION);
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_PHONE_STATE)){
                     // Provide rationale in Snackbar with button to request permission
-                    Snackbar.make(findViewById(android.R.id.content), R.string.permission_location_rationale, Snackbar.LENGTH_INDEFINITE).show();
+                    Snackbar.make(rootView, R.string.permission_location_rationale, Snackbar.LENGTH_INDEFINITE).show();
                 }
             }
             if (!permissionsItems.isEmpty()) {
@@ -211,11 +212,6 @@ public class EmailPasswordActivity extends BaseActivity implements
                             Log.w(TAG, "signInWithEmail:failed", task.getException());
                             Toast.makeText(EmailPasswordActivity.this, R.string.auth_failed,
                                     Toast.LENGTH_SHORT).show();
-                        }
-
-                        // [START_EXCLUDE]
-                        if (!task.isSuccessful()) {
-                            //mStatusTextView.setText(R.string.auth_failed);
                         }else
                         {
                             checkIfEmailVerified();
@@ -232,6 +228,7 @@ public class EmailPasswordActivity extends BaseActivity implements
         // Send verification email
         // [START send_email_verification]
         final FirebaseUser user = mAuth.getCurrentUser();
+        if(user == null) return;
         user.sendEmailVerification()
                 .addOnCompleteListener(this, new OnCompleteListener<Void>() {
                     @Override
@@ -258,7 +255,7 @@ public class EmailPasswordActivity extends BaseActivity implements
     private void checkIfEmailVerified()
     {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
+        if(user == null) return;
         if (user.isEmailVerified())
         {
             // user is verified, so you can finish this activity or send user to activity which you want.
@@ -331,10 +328,7 @@ public class EmailPasswordActivity extends BaseActivity implements
             builder.setPositiveButton(android.R.string.ok,new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     // continue with delete
-                    if (!permissionsItems.isEmpty()) {
-                        String[] params = permissionsItems.toArray(new String[permissionsItems.size()]);
-                        ActivityCompat.requestPermissions(EmailPasswordActivity.this, params, REQUEST_PHONE_LOCATION);
-                    }
+                    checkPermissionsAndInit();
                     dialog.dismiss();
                 }
             });
