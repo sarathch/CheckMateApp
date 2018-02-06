@@ -2,6 +2,7 @@ package com.example.syennamani.checkmate;
 
 import android.*;
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -67,6 +68,7 @@ public class EmailPasswordActivity extends BaseActivity implements
 
     }
 
+    @SuppressLint("HardwareIds")
     private void fetchPhoneNumber() {
         try {
             TelephonyManager tMgr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
