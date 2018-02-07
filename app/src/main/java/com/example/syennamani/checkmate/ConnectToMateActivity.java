@@ -19,6 +19,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.syennamani.checkmate.Database.Friend;
+import com.example.syennamani.checkmate.Database.User;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
 
 import java.util.ArrayList;
@@ -39,30 +41,33 @@ public class ConnectToMateActivity extends BaseActivity {
 
         // Setting action bar logout
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayOptions(actionBar.getDisplayOptions()
-                | ActionBar.DISPLAY_SHOW_CUSTOM);
-        ImageView imageView = new ImageView(actionBar.getThemedContext());
-        imageView.setScaleType(ImageView.ScaleType.CENTER);
-        imageView.setImageResource(R.drawable.logout);
-        ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(
-                ActionBar.LayoutParams.WRAP_CONTENT,
-                ActionBar.LayoutParams.WRAP_CONTENT, Gravity.RIGHT
-                | Gravity.CENTER_VERTICAL);
-        layoutParams.rightMargin = 40;
-        imageView.setLayoutParams(layoutParams);
-        actionBar.setCustomView(imageView);
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                myFirebaseMethods.showAlertDialog("SIGN OUT", "Are you sure you want to logout?","SignOut");
-            }
-        });
+        if(actionBar!=null) {
+            actionBar.setDisplayOptions(actionBar.getDisplayOptions()
+                    | ActionBar.DISPLAY_SHOW_CUSTOM);
+            ImageView imageView = new ImageView(actionBar.getThemedContext());
+            imageView.setScaleType(ImageView.ScaleType.CENTER);
+            imageView.setImageResource(R.drawable.logout);
+            ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(
+                    ActionBar.LayoutParams.WRAP_CONTENT,
+                    ActionBar.LayoutParams.WRAP_CONTENT, Gravity.END
+                    | Gravity.CENTER_VERTICAL);
+            layoutParams.rightMargin = 40;
+            imageView.setLayoutParams(layoutParams);
+            actionBar.setCustomView(imageView);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    myFirebaseMethods.showAlertDialog("SIGN OUT", "Are you sure you want to logout?","SignOut");
+                }
+            });
+        }
+
         // Add Friend Floating action button
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.floatingActionButton);
+        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "Enter your friend's email!", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
                 showCustomDialog("ADD FRIEND", "FriendRequest");
             }
@@ -76,7 +81,7 @@ public class ConnectToMateActivity extends BaseActivity {
 
         private Context context;
         private List<Friend> friends;
-        public FriendsListAdapter(Context context,
+        private FriendsListAdapter(Context context,
                                   ArrayList<Friend> friends) {
             this.context = context;
             this.friends = friends;
@@ -97,22 +102,23 @@ public class ConnectToMateActivity extends BaseActivity {
             return 0;
         }
 
-        @NonNull
+        @Nullable
         @Override
         public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             // First let's verify the convertView is not null
             if (convertView == null) {
                 // This a new view we inflate the new layout
-                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                LayoutInflater inflater = LayoutInflater.from(parent.getContext());
                 convertView = inflater.inflate(R.layout.adapter_friendslist, parent, false);
             }
-            TextView tvTextBottom = (TextView)convertView.findViewById(R.id.card_item_textBottom);
+
+            TextView tvTextBottom = convertView.findViewById(R.id.card_item_textBottom);
             tvTextBottom.setText(friends.get(position).getF_email());
 
-            TextView tvTextBottom1 = (TextView)convertView.findViewById(R.id.card_item_textBottom1);
+            TextView tvTextBottom1 = convertView.findViewById(R.id.card_item_textBottom1);
             tvTextBottom1.setText(friends.get(position).getF_phone());
 
-            ImageView imageView = (ImageView)convertView.findViewById(R.id.iv_search);
+            ImageView imageView = convertView.findViewById(R.id.iv_search);
             imageView.setOnClickListener(new View.OnClickListener() {
 
                 @Override
@@ -125,8 +131,10 @@ public class ConnectToMateActivity extends BaseActivity {
 
     }
 
-    protected ArrayList<Friend> fetchFriendsList(){
+    protected void fetchFriendsList(){
         final ArrayList<Friend> friendsList = new ArrayList<>();
+        if(mAuth.getCurrentUser()==null)
+            return;
         DatabaseReference ref = mDatabase.child(mAuth.getCurrentUser().getUid()).child("friends");
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -135,11 +143,11 @@ public class ConnectToMateActivity extends BaseActivity {
                 Log.v("Count " ,""+dataSnapshot.getChildrenCount());
                 for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
                     Friend friend = postSnapshot.getValue(Friend.class);
-                    Log.v(TAG, friend.getF_email());
+                    Log.v(TAG, friend != null ? friend.getF_email() : "null");
                     friendsList.add(friend);
                     FriendsListAdapter adapter = new FriendsListAdapter(context, friendsList);
                     // FriendsList List View
-                    ListView listView = (ListView) findViewById(R.id.lv_friendsList);
+                    ListView listView = findViewById(R.id.lv_friendsList);
                     listView.setAdapter(adapter);
                 }
             }
@@ -149,7 +157,6 @@ public class ConnectToMateActivity extends BaseActivity {
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
-        return friendsList;
     }
 
     @Override
